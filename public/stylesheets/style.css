@@ -1,0 +1,35 @@
+html, body {
+   height: 100%;
+}
+
+body {
+	margin: 0;
+	overflow: hidden;
+	background-color: #000;
+	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+  color: #00B7FF;
+}
+.tm {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+.webgl-error {
+	font: 15px/30px monospace;
+	text-align: center;
+	color: #fff;
+	margin: 50px;
+}
+
+.webgl-error a {
+	color: #fff;
+}
+
+.white {
+	color: #ffffff;
+}
+
+#map { width: 100%; height: 92%; }

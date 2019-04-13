@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <% include ../partials/head %>
+
+        <script type="x-shader/x-vertex" id="vertexshader">
+
+        uniform float amplitude;
+        attribute float size;
+        attribute vec3 customColor;
+
+        varying vec3 vColor;
+
+        void main() {
+
+            vColor = customColor;
+
+            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+                    //gl_PointSize = size;
+                    gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
+
+                    gl_Position = projectionMatrix * mvPosition;
+
+                }
+
+                </script>
+
+                <script type="x-shader/x-fragment" id="fragmentshader">
+
+                uniform vec3 color;
+                uniform sampler2D texture;
+
+                varying vec3 vColor;
+
+                void main() {
+
+                    gl_FragColor = vec4( color * vColor, 1.0 );
+                    gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+
+                }
+
+                </script>
+    </head>
+    <body>
+        <header>
+        <% include ../partials/header %>
+        </header>
+
+        <main>
+        <div id="webgl"></div>
+
+        <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+        <script src="js/libs/three.min.js"></script>
+        <script src="js/libs/Detector.js"></script>
+        <script src="js/libs/Quaternion.js"></script>
+        <script src="js/libs/OrbitControls.js"></script>
+        <script src="js/libs/LensFlare.js"></script>
+        <script src="js/libs/PointCloud.js"></script>
+        <script src="js/earth2.js"></script>
+
+        </main>
+
+    <footer>
+    <% include ../partials/footer %>
+    </footer>
+
+    </body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<% include ../partials/head %>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"/>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+
+	<script>
+      var lat = <%= lat %>
+      var lng = <%= lng %>
+      var zoom = <%= zoom %>
+    </script>
+</head>
+<body>
+
+	<header>
+		<% include ../partials/header %>
+	</header>
+
+	<div id="map" style="width:100%; height: 92%;" ></div>
+
+
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+	<script src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+	<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="js/libs/StreetViewButtons.js"></script>
+
+	<script src="js/heatmap-detailed.js"></script>
+
+	<footer>
+		<% include ../partials/footer %>
+	</footer>
+
+
+</body>
+</html>
