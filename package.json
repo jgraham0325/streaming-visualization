@@ -10,7 +10,7 @@
     "chartjs-plugin-streaming": "^1.7.1",
     "emitter": "0.0.5",
     "express": "4.16.4",
-    "ejs": "^2.5.5",
+    "ejs": "^1.0.0",
     "redis": "^0.11.0",
     "socket.io": "^1.0.6"
   },

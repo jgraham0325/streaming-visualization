@@ -1,6 +1,6 @@
 const maxNumPoints = 5000;
 
-var map = setupBaseMap();
+var map = setupBaseMap(lat, lng, zoom);
 var markersForClusterLayer = [];
 var markerClusterLayer = L.markerClusterGroup();
 var heatLayer = L.heatLayer([]).addTo(map);
@@ -30,7 +30,7 @@ L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
 
 registerWebSocketListeners();
 
-function setupBaseMap() {
+function setupBaseMap(lat, lng, zoom) {
     //variables may have been passed in from URL, otherwise default to view of UK
     var map = L.map('map').setView([lat ? lat : 52.777814, lng ? lng : -3.430458], zoom ? zoom : 5);
 
