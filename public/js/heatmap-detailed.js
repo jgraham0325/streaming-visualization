@@ -1,3 +1,47 @@
+const maxNumPoints = 5000;
+
+var map = setupBaseMap();
+var markersForClusterLayer = [];
+var markerClusterLayer = L.markerClusterGroup();
+var heatLayer = L.heatLayer([]).addTo(map);
+var socket = io();
+
+heatLayer._latlngs.push = function () {
+    if (this.length >= maxNumPoints) {
+        this.shift();
+    }
+    return Array.prototype.push.apply(this, arguments);
+};
+
+markersForClusterLayer.push = function () {
+    if (this.length >= maxNumPoints) {
+        var markerToRemove = markersForClusterLayer.shift();
+        markerClusterLayer.removeLayer(markerToRemove);
+    }
+    return Array.prototype.push.apply(this, arguments);
+};
+
+var overlayMaps = {
+    "Heat": heatLayer,
+    "Points": markerClusterLayer
+};
+
+L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+
+registerWebSocketListeners();
+
+function setupBaseMap() {
+    //variables may have been passed in from URL, otherwise default to view of UK
+    var map = L.map('map').setView([lat ? lat : 52.777814, lng ? lng : -3.430458], zoom ? zoom : 5);
+
+    L.streetView({position: 'topleft'}).addTo(map);
+
+    var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    return map;
+}
+
 function create_UUID() {
     var dt = new Date().getTime();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -7,54 +51,23 @@ function create_UUID() {
     });
 }
 
-//variables may have been passed in from URL, otherwise default to view of UK
-var map = L.map('map').setView([lat ? lat : 52.777814, lng ? lng : -3.430458], zoom ? zoom : 5);
-
-L.streetView({position: 'topleft'})
-    .addTo(map);
-
-var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-var markerClusterLayer = L.markerClusterGroup();
-
-var socket = io();
-
-var markers = [];
-var heatLayer = L.heatLayer([], {
-    maxZoom: 10
-}).addTo(map);
-
-const maxNumPoints = 1000;
-
-heatLayer._latlngs.push = function () {
-    if (this.length >= maxNumPoints) {
-        this.shift();
-    }
-    return Array.prototype.push.apply(this, arguments);
-}
-
-socket.on('message', function (coord) {
-    addHighRiskTransactionMarker(coord)
-});
-
-socket.on('history', function (coords) {
-    console.log("History received by client with " + coords.length + " records");
-    coords.forEach(function (coord) {
-        addHighRiskTransactionMarker(coord)
-    });
-});
-
 function addHighRiskTransactionMarker(coord) {
     var latlng = L.latLng(coord.lat, coord.lng);
-    if (heatLayer._map != null) {
-        heatLayer.addLatLng(latlng);
-    }
+    var marker = createMarker(latlng);
+
+    if (heatLayer._map != null) heatLayer.addLatLng(latlng);
+
+    markersForClusterLayer.push(markersForClusterLayer);
+    markerClusterLayer.addLayer(marker);
+}
+
+function createMarker(latlng) {
+
     var title = "<b>Transaction ID:<br/></b>" + create_UUID() + "<br/>"
-                + "<b>Position: </b><br/>" + coord.lat + " , " + coord.lng + "<br/>"
-                + "<b>Risk classification: </b><br/> High risk (95)<br/>"
-                + "<a target='_blank' href='https://www.google.com/maps?layer=c&cbll="+ coord.lat+","+coord.lng+"'>Open streetview</a>"
+                + "<b>Position: </b>" + latlng.lat + ", " + latlng.lng + "<br/>"
+                + "<b>Risk classification: </b>High risk (95)<br/>"
+                + "<a class='btn btn-outline-primary btn-sm' target='_blank' href='https://www.google.com/maps?layer=c&cbll="
+                + latlng.lat + "," + latlng.lng + "'>Open streetview</a>"
     var redIcon = new L.Icon({
                                  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
                                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -65,17 +78,17 @@ function addHighRiskTransactionMarker(coord) {
                              });
     var marker = L.marker(latlng, {title: title, icon: redIcon});
     marker.bindPopup(title);
-    if (markers.length >= maxNumPoints) {
-        var markerToRemove = markers.shift();
-        markerClusterLayer.removeLayer(markerToRemove);
-    }
-    markers.push(markers);
-    markerClusterLayer.addLayer(marker);
+    return marker;
 }
 
-var overlayMaps = {
-    "Heat": heatLayer,
-    "Points": markerClusterLayer
-};
+function registerWebSocketListeners() {
+    socket.on('message', function (coord) {
+        addHighRiskTransactionMarker(coord)
+    });
 
-L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+    socket.on('history', function (coords) {
+        coords.forEach(function (coord) {
+            addHighRiskTransactionMarker(coord)
+        });
+    });
+}

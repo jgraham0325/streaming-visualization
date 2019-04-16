@@ -36,25 +36,24 @@ app.get('/chart', function(req, res) {
 	res.render('pages/chart');
 });
 
-const maxNumPoints = 1000;
-let history = [];
+const maxCoordinates = 5000;
+let coordinatesHistory = [];
 
-history.push = function () {
-	if (this.length >= maxNumPoints) {
+coordinatesHistory.push = function () {
+	if (this.length >= maxCoordinates) {
 		this.shift();
 	}
 	return Array.prototype.push.apply(this, arguments);
 }
 
 io.sockets.on("connection",function(socket){
-	console.log("Send history")
-	socket.emit("history",history);
+	socket.emit("history",coordinatesHistory);
 })
 
 // When a message comes from Redis, send down websocket to client
 redisClient.on('message', function(channel, message) {	
 	var coord = JSON.parse(message);
-	history.push(coord)
+	coordinatesHistory.push(coord)
 	io.emit('message', coord);
 });
 
