@@ -4,7 +4,7 @@ var map = setupBaseMap(lat, lng, zoom);
 var markersForClusterLayer = [];
 var markerClusterLayer = L.markerClusterGroup();
 var heatLayer = L.heatLayer([]).addTo(map);
-var socket = io();
+registerWebSocketListeners(io());
 
 heatLayer._latlngs.push = function () {
     if (this.length >= maxNumPoints) {
@@ -28,7 +28,6 @@ var overlayMaps = {
 
 L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
 
-registerWebSocketListeners();
 
 function setupBaseMap(lat, lng, zoom) {
     //variables may have been passed in from URL, otherwise default to view of UK
@@ -81,7 +80,7 @@ function createMarker(latlng) {
     return marker;
 }
 
-function registerWebSocketListeners() {
+function registerWebSocketListeners(socket) {
     socket.on('message', function (coord) {
         addHighRiskTransactionMarker(coord)
     });
