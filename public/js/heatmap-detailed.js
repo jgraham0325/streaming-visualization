@@ -42,12 +42,12 @@ function setupBaseMap(lat, lng, zoom) {
 
     //clear points (markers) button
     L.easyButton('fas fa-trash-alt', function(btn, map){
-        markersForClusterLayer = [];
         if (heatLayer._map != null) {
             heatLayer.setLatLngs([]);
             heatLayer.redraw();
         }
         pruneClusterLayer.RemoveMarkers(markersForClusterLayer);
+        markersForClusterLayer = [];
         pruneClusterLayer.ProcessView();
     }, "Clear points").addTo( map );
 
