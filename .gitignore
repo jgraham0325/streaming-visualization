@@ -82,3 +82,7 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+keys.json
+app.yaml
+nginx-app.yaml

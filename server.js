@@ -4,9 +4,9 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var redis = require('redis');
-var redisClient = redis.createClient(6379, process.env.PARAM1);
 
-//templating engine
+var redisClient = redis.createClient(6379, "127.0.0.1");
+
 app.set('view engine', 'ejs');
 
 app.use(express.static(__dirname + '/public'));
@@ -30,6 +30,15 @@ app.get('/heatmap-detailed', function(req, res) {
 	{"lat": req.query.lat,
 	"lng": req.query.lng,
 	"zoom": req.query.zoom});
+});
+
+app.get('/heatmap-detailed/clear-history', function (req, res) {
+	coordinatesHistory = [];
+	res.render('pages/heatmap-detailed', {
+				   "lat": req.query.lat,
+				   "lng": req.query.lng,
+				   "zoom": req.query.zoom
+			   });
 });
 
 app.get('/chart', function(req, res) {

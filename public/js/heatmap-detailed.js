@@ -2,7 +2,7 @@ const maxNumPoints = 5000;
 
 var map = setupBaseMap(lat, lng, zoom);
 var markersForClusterLayer = [];
-var markerClusterLayer = L.markerClusterGroup();
+var pruneClusterLayer = new PruneClusterForLeaflet();
 var heatLayer = L.heatLayer([]).addTo(map);
 registerWebSocketListeners(io());
 
@@ -16,17 +16,18 @@ heatLayer._latlngs.push = function () {
 markersForClusterLayer.push = function () {
     if (this.length >= maxNumPoints) {
         var markerToRemove = markersForClusterLayer.shift();
-        markerClusterLayer.removeLayer(markerToRemove);
+        pruneClusterLayer.RemoveMarkers([markerToRemove])
     }
     return Array.prototype.push.apply(this, arguments);
 };
 
 var overlayMaps = {
     "Heat": heatLayer,
-    "Points": markerClusterLayer
+    "Points": pruneClusterLayer
 };
 
 L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+
 
 
 function setupBaseMap(lat, lng, zoom) {
@@ -38,6 +39,18 @@ function setupBaseMap(lat, lng, zoom) {
     var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    //clear points (markers) button
+    L.easyButton('fas fa-trash-alt', function(btn, map){
+        markersForClusterLayer = [];
+        if (heatLayer._map != null) {
+            heatLayer.setLatLngs([]);
+            heatLayer.redraw();
+        }
+        pruneClusterLayer.RemoveMarkers(markersForClusterLayer);
+        pruneClusterLayer.ProcessView();
+    }, "Clear points").addTo( map );
+
     return map;
 }
 
@@ -56,13 +69,15 @@ function addHighRiskTransactionMarker(coord) {
 
     if (heatLayer._map != null) heatLayer.addLatLng(latlng);
 
-    markersForClusterLayer.push(markersForClusterLayer);
-    markerClusterLayer.addLayer(marker);
+    markersForClusterLayer.push(marker)
+    pruneClusterLayer.RegisterMarker(marker)
+    pruneClusterLayer.ProcessView();
+
 }
 
 function createMarker(latlng) {
 
-    var title = "<b>Transaction ID:<br/></b>" + create_UUID() + "<br/>"
+    var popup = "<b>Transaction ID:<br/></b>" + create_UUID() + "<br/>"
                 + "<b>Position: </b>" + latlng.lat + ", " + latlng.lng + "<br/>"
                 + "<b>Risk classification: </b>High risk (95)<br/>"
                 + "<a class='btn btn-outline-primary btn-sm' target='_blank' href='https://www.google.com/maps?layer=c&cbll="
@@ -75,8 +90,9 @@ function createMarker(latlng) {
                                  popupAnchor: [1, -34],
                                  shadowSize: [41, 41]
                              });
-    var marker = L.marker(latlng, {title: title, icon: redIcon});
-    marker.bindPopup(title);
+    var marker = new PruneCluster.Marker(latlng.lat, latlng.lng);
+    marker.data.icon = redIcon
+    marker.data.popup = popup
     return marker;
 }
 
